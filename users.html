@@ -1,0 +1,173 @@
+<!DOCTYPE html>
+<html>
+	<head>
+		<title>SlicePay</title>
+		<link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0-alpha.6/css/bootstrap.min.css" integrity="sha384-rwoIResjU2yc3z8GV/NPeZWAv56rSmLldC3R/AZzGRnGxQQKnKkoFVhFQhNUwEyJ" crossorigin="anonymous">
+
+		<style type="text/css">
+			div {
+				padding : 10px;
+			}
+		</style>
+	</head>
+
+	<!-- check user is logged in -->
+	<body onload="checkLogin()">
+		<nav class="navbar navbar-toggleable-md navbar-light bg-faded">
+		 	<button class="navbar-toggler navbar-toggler-right" type="button" data-toggle="collapse" data-target="#navbarSupportedContent" aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
+		    	<span class="navbar-toggler-icon"></span>
+		 	</button>
+		 	<a class="navbar-brand" href="#">SlicePay</a>
+
+		 	<div class="collapse navbar-collapse" id="navbarSupportedContent">
+		    	<ul class="navbar-nav mr-auto">
+		      		<li class="nav-item">
+		        		<a class="nav-link" href="./index.html" onclick="logout()">Logout</a>
+		      		</li>
+		    	</ul>
+		  	</div>
+		</nav>
+
+		<div class="container">
+			<button type="button" class="btn btn-primary" data-toggle="modal" data-target="#myModal">
+			  	Add New
+			</button>
+		</div>
+
+		<!-- Model to add user -->
+		<div class="modal fade" id="myModal" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel" aria-hidden="true">
+		  	<div class="modal-dialog" role="document">
+		    	<div class="modal-content">
+		      		<div class="modal-header">
+		        		<h5 class="modal-title" id="exampleModalLabel">Add New User</h5>
+		        		<button type="button" class="close" data-dismiss="modal" aria-label="Close">
+		          			<span aria-hidden="true">&times;</span>
+		        		</button>
+		      		</div>
+		      		<div class="modal-body">
+		        		<div>
+		        			<!-- display errors -->
+		        			<p id="errors" style="background-color:#FF9494"></p>
+				  			<p id="formName">Name</p>
+				  			<input id='name'/><br/><br/>
+				  			<p id="formSal">Salary</p>
+				  			<input id='salary'/><br/><br/>
+						</div>
+		      		</div>
+		      		<div class="modal-footer">
+		        		<button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+		        		<!-- form validation and submit -->
+		        		<a href="" class="btn btn-primary" onclick="return validate();" role="button">Save User</a>
+		      		</div>
+		    	</div>
+		  	</div>
+		</div>
+
+		<!-- display table -->
+		<table class="table table-striped">
+		  	<thead>
+		    	<tr>
+		      		<th>#</th>
+		      		<th>Name</th>
+		      		<th>Salary</th>
+		      		<th>Delete</th>
+		    	</tr>
+		  	</thead>
+		  	<tbody id="users">
+		  	</tbody>
+		</table>
+
+		<script src="https://code.jquery.com/jquery-3.1.1.slim.min.js" integrity="sha384-A7FZj7v+d/sdmMqp/nOQwliLvUsJfDHW+k9Omg/a/EheAdgtzNs3hpfag6Ed950n" crossorigin="anonymous"></script>
+		<script src="https://cdnjs.cloudflare.com/ajax/libs/tether/1.4.0/js/tether.min.js" integrity="sha384-DztdAPBWPRXSA/3eYEEUWrWCy7G5KFbe8fFjk5JAIxUYHKkDx6Qin1DkWx51bBrb" crossorigin="anonymous"></script>
+		<script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0-alpha.6/js/bootstrap.min.js" integrity="sha384-vBWWzlZJ8ea9aCX4pEW3rVHjgjt7zpkNpZk+02D9phzyeVkE+jo0ieGizqPLForn" crossorigin="anonymous"></script>
+
+		<script type="text/javascript">
+
+			// set cookies in browser
+			const setCookie = (name, value, days = 7, path = '/') => {
+  								const expires = new Date(Date.now() + days * 864e5).toGMTString();
+  								document.cookie = name + `=${encodeURIComponent(value)}; expires=${expires}; path=` + path;
+							};
+
+			//get browser cookies
+			const getCookie = (name) => {
+  								return document.cookie.split('; ').reduce((r, v) => {
+    								const parts = v.split('=');
+    								return parts[0] === name ? decodeURIComponent(parts[1]) : r;
+  								}, '')
+							};
+
+			// delete user from table and cookies
+			const deleteUser = (user, path='/') => {
+									users = JSON.parse(getCookie('usersT'));
+  									users.splice(user,1);
+  									setCookie('usersT', JSON.stringify(users), 30);
+  									return true;
+								};
+
+			function validate() {
+  				var name = document.getElementById("name").value;
+  				var salary = document.getElementById("salary").value;
+  				// validate name by regex
+  				var nameCheck = /^[a-zA-Z ]+$/.test(name);
+  				//validate salary by regex
+  				var salaryCheck = /^[0-9]+$/.test(salary);
+  				var errors = document.getElementById("errors");
+  				errors.innerHTML = "";
+  				var error = "";
+  				if (nameCheck && salaryCheck) {
+  					// get user cookies if exists
+  					if(getCookie('usersT'))
+  						users = JSON.parse(getCookie('usersT'));
+  					else
+  						users = [];
+  					users.push([name,salary]);
+  					setCookie('usersT', JSON.stringify(users), 30);
+  					return true;
+  				} if(!nameCheck) {
+    				error += "Enter correct name<br/>";
+  				} if(!salaryCheck) {
+    				error += "Enter correct salary<br/>";
+  				}
+  				//diaplay errors
+  				errors.innerHTML = error;
+  				return false;
+			}
+
+			//display table of users
+			function userTable() {
+				var data = "";
+				if(getCookie('usersT'))
+  					users = JSON.parse(getCookie('usersT'));
+  				else
+  					users = [];
+  				users.forEach((element, i) => {
+  					data += `
+  						<tr>
+		      				<th scope="row">${i+1}</th>
+		      				<td>${element[0]}</td>
+		      				<td>${element[1]}</td>
+		      				<td><a href="" class="btn btn-danger" onclick="deleteUser(${i});" role="button">Delete</a></td>
+		    			</tr>
+  					`
+  				});
+  				document.getElementById("users").innerHTML = data;
+			}
+
+			// if not login then redirect to 1st page
+			function checkLogin() {
+				if(!getCookie("logged"))
+					window.location = "./index.html";
+                userTable();
+			}
+
+			// logout the user and delete login cookie
+			function logout() {
+				setCookie("logged", "0", -1);
+				return true;
+			}
+
+		</script>
+
+	</body>
+</html>

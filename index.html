@@ -1,0 +1,144 @@
+<!DOCTYPE html>
+<html>
+	<head>
+		<title>SlicePay</title>
+
+		<!-- Bootstrap 4 -->
+		<link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0-alpha.6/css/bootstrap.min.css" integrity="sha384-rwoIResjU2yc3z8GV/NPeZWAv56rSmLldC3R/AZzGRnGxQQKnKkoFVhFQhNUwEyJ" crossorigin="anonymous">
+
+		<style type="text/css">
+			div {
+				padding : 10px;
+			}
+		</style>
+
+	</head>
+	<!-- onload to set initial data -->
+	<body onload="setAdmin();">
+		<!-- navbar -->
+		<nav class="navbar navbar-toggleable-md navbar-light bg-faded">
+		 	<button class="navbar-toggler navbar-toggler-right" type="button" data-toggle="collapse" data-target="#navbarSupportedContent" aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
+		    	<span class="navbar-toggler-icon"></span>
+		 	</button>
+		 	<a class="navbar-brand" href="#">SlicePay</a>
+
+		 	<div class="collapse navbar-collapse" id="navbarSupportedContent">
+		    	<ul class="navbar-nav mr-auto">
+		      		<li class="nav-item">
+		        		<a class="nav-link disabled" href="#">Logout</a>
+		      		</li>
+		    	</ul>
+		  	</div>
+		</nav>
+
+		<!-- Login form -->
+		<div class="container">
+			<div class="container">
+				<!-- Display errors -->
+				<p id="errors" style="background-color:#FF9494"></p>
+			</div>
+			<form action="./users.html" onsubmit="return validate();">
+  				<p id="formEmail">Enter an email address:</p>
+  				<input id='email'/><br/><br/>
+  				<p id="formPass">Enter an Password:</p>
+  				<input type="password" id='password'/><br/><br/>
+  				<button type="submit" class="btn btn-primary" role="button">Login</button>
+			</form>
+		</div>
+
+		<!-- Table with no delete -->
+		<table class="table table-striped">
+		  	<thead>
+		    	<tr>
+			  		<th>#</th>
+		      		<th>Name</th>
+		      		<th>Salary</th>
+		    	</tr>
+			</thead>
+		  	<tbody id="users">
+		  	</tbody>
+		</table>
+
+		<!-- Bootstrap 4 js files -->
+		<script src="https://code.jquery.com/jquery-3.1.1.slim.min.js" integrity="sha384-A7FZj7v+d/sdmMqp/nOQwliLvUsJfDHW+k9Omg/a/EheAdgtzNs3hpfag6Ed950n" crossorigin="anonymous"></script>
+		<script src="https://cdnjs.cloudflare.com/ajax/libs/tether/1.4.0/js/tether.min.js" integrity="sha384-DztdAPBWPRXSA/3eYEEUWrWCy7G5KFbe8fFjk5JAIxUYHKkDx6Qin1DkWx51bBrb" crossorigin="anonymous"></script>
+		<script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0-alpha.6/js/bootstrap.min.js" integrity="sha384-vBWWzlZJ8ea9aCX4pEW3rVHjgjt7zpkNpZk+02D9phzyeVkE+jo0ieGizqPLForn" crossorigin="anonymous"></script>
+
+		<script type="text/javascript">
+
+			//set cookie in browser
+			const setCookie = (name, value, days = 7, path = '/') => {
+  								const expires = new Date(Date.now() + days * 864e5).toGMTString();
+  								document.cookie = name + `=${encodeURIComponent(value)}; expires=${expires}; path=` + path;
+							};
+
+			// get brwser cookies
+			const getCookie = (name) => {
+  								return document.cookie.split('; ').reduce((r, v) => {
+    								const parts = v.split('=');
+    								return parts[0] === name ? decodeURIComponent(parts[1]) : r;
+  								}, '')
+							};
+
+			//set initial cookies
+			const setAdmin = () => {
+				if(!getCookie("adminEmail") || !getCookie("adminPass")) {
+					setCookie("adminEmail", "india1354@gmail.com", 30);
+					setCookie("adminPass", "1234", 30);
+					// initial users
+					setCookie("usersT", '[["user1","12123"],["user2","453456"],["user3","5467546"]]', 30);
+				}
+				// display data in table
+				userTable();
+			};
+
+			//validate data and display errors
+			function validate() {
+  				var email = document.getElementById("email").value;
+  				var pass = document.getElementById("password").value;
+  				var errors = document.getElementById("errors");
+  				errors.innerHTML = "";
+  				var error = "";
+  				// regex expression to check email
+  				var emailCheck = /^\w+@[a-zA-Z_]+?\.[a-zA-Z]{2,3}$/.test(email);
+  				if (emailCheck && pass.length) {
+  					if(email==getCookie("adminEmail") && pass==getCookie("adminPass")) {
+  						setCookie("logged", "1", 30);
+  						return true;
+  					}else if(email==getCookie("adminEmail") && pass!=getCookie("adminPass")) {
+  						error = "Incorrect Password<br/>";
+  					} else
+  						error = "Email is not Admin<br/>";
+  				} if(!emailCheck) {
+    				error += "Incorrect Email<br/>";
+  				} if(!pass.length) {
+    				error += "Enter Password<br/>";
+  				}
+  				//display errors
+  				errors.innerHTML = error;
+  				return false;
+			}
+
+			//display users in table
+			function userTable() {
+				var data = "";
+				if(getCookie('usersT'))
+  					users = JSON.parse(getCookie('usersT'));
+  				else
+  					users = [];
+  				users.forEach((element, i) => {
+  					data += `
+  						<tr>
+		      				<th scope="row">${i+1}</th>
+		      				<td>${element[0]}</td>
+		      				<td>${element[1]}</td>
+		    			</tr>
+  					`
+  				});
+  				document.getElementById("users").innerHTML = data;
+			}
+
+		</script>
+
+	</body>
+</html>
